@@ -1,8 +1,8 @@
 # Operating System 2019 Spring Checkpoint 04
 
 ## Preemptive Multithreading
-For this programming project checkpoint, you are to test your preemptive multithreading and semaphore code by extending the classical bounded-buffer example to two producers and one consumer.  The two producers will compete with each other for writing. 
-You should make a new directory and copy the source files from the previous checkpoint.  Make a copy of testpreempt.c and name it test3threads.c.   This is your opportunity to stress test your semaphore and threads code.  If your previous checkpoints worked but this one doesn’t, then something is wrong with your code.  Debug here and once it works, then apply those changes to your previous checkpoints to see if they still work.
+For this programming project checkpoint, you are to test your preemptive multithreading and semaphore code by extending the classical bounded-buffer example to two producers and one consumer. The two producers will compete with each other for writing. 
+You should make a new directory and copy the source files from the previous checkpoint. Make a copy of testpreempt.c and name it test3threads.c. This is your opportunity to stress test your semaphore and threads code. If your previous checkpoints worked but this one doesn’t, then something is wrong with your code. Debug here and once it works, then apply those changes to your previous checkpoints to see if they still work.
 
 
 

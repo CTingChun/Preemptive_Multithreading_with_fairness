@@ -14,12 +14,12 @@ CFLAGS = -c
 LDFLAGS = 
 #--stack-after-data --stack-loc 0x39 --data-loc 0x20
 
-C_OBJECTS = testpreempt.rel preemptive.rel
+C_OBJECTS = test3threads.rel preemptive.rel
 
-all: testpreempt.hex
+all: test3threads.hex
 
-testpreempt.hex:   $(C_OBJECTS) $(ASM_OBJECTS)
-				$(CC) $(LDFLAGS) -o testpreempt.hex $(C_OBJECTS)
+test3threads.hex:   $(C_OBJECTS) $(ASM_OBJECTS)
+				$(CC) $(LDFLAGS) -o test3threads.hex $(C_OBJECTS)
 
 clean:
 	rm *.hex *.ihx *.lnk *.lst *.map *.mem *.rel *.rst *.sym
