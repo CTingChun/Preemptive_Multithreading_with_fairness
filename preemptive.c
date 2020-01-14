@@ -1,13 +1,15 @@
 #include <8051.h>
 #include "preemptive.h"
 
-__idata __at (0x20) char savedSP[MAXTHREADS];
-__idata __at (0x24) char threadBitmap[MAXTHREADS];
+#define MAXTHREADS 5
+__idata __at (0x1E) char savedSP[MAXTHREADS];
+__idata __at (0x23) char threadBitmap[MAXTHREADS];
 __idata __at (0x28) char ID;
 __idata __at (0x29) char tmp;
 __idata __at (0x2A) char i;
 __idata __at (0x2B) char currentID;
 __idata __at (0x2C) char managerID;
+__idata __at (0x3E) char scheduler;
 
 #define SAVESTATE \
 { __asm \
@@ -37,7 +39,19 @@ extern void main( void );
 
 void threadManager (void) {
     for (;;) {
-        ID = ( ID == MAXTHREADS - 1 ) ? 0 : ID+1;
+        if (ID == 2 || ID == 3) ID = 4;
+        else if (ID == 4)
+        {
+            if (scheduler == 0) {
+                ID = 2;
+                scheduler = 1;
+            }
+            else {
+                ID = 3;
+                scheduler = 0;
+            }
+        }
+        else ID ++;
         if (threadBitmap[ID] > 0) break;
     }
     RESTORESTATE;
@@ -55,7 +69,7 @@ void myTimer0Handler (void) {
 }
 
 void Bootstrap( void ) {
-    threadBitmap[0] = threadBitmap[1] = threadBitmap[2] = threadBitmap[3] = 0;
+    threadBitmap[0] = threadBitmap[1] = threadBitmap[2] = threadBitmap[3] = threadBitmap[4] = 0;
     TMOD = 0;
     IE = 0x82;
     TR0 = 1;
@@ -65,7 +79,6 @@ void Bootstrap( void ) {
 }
 
 ThreadID ThreadCreate(FunctionPtr fp) {
-
     EA = 0;
     for (i=0; i<MAXTHREADS; i++) if (!threadBitmap[i]) break;
     if (i == MAXTHREADS) return -1;
@@ -80,7 +93,7 @@ ThreadID ThreadCreate(FunctionPtr fp) {
         push DPH
         push a
         push b
-        mov a,#0x00
+        mov a, #0x00
         push a
         push a
         push a
@@ -100,9 +113,7 @@ void ThreadYield( void ) {
     EA = 0;
     SAVESTATE ;
     for (;;) {
-        if (ID == MAXTHREADS - 1) ID = 0;
-        else ID++;
-        // ID = ( ID == MAXTHREADS - 1 ) ? 0 : ID+1;
+        ID = (ID == MAXTHREADS - 1) ? 0 : ID + 1;
         if (threadBitmap[ID] > 0) break;
     }
     RESTORESTATE ;
@@ -113,9 +124,8 @@ void ThreadExit( void ) {
     EA = 0;
     threadBitmap[ID] = 0;
     for (;;) {
-        if (ID == MAXTHREADS - 1) ID = 0;
+        if(ID==MAXTHREADS-1) ID = 0;
         else ID++;
-        // ID = ( ID == MAXTHREADS - 1 ) ? 0 : ID+1;
         if(threadBitmap[ID]>0) break;
     }
     RESTORESTATE;

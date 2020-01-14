@@ -11,8 +11,6 @@
 #ifndef __PREEMPTIVE_H__
 #define __PREEMPTIVE_H__
 
-#define MAXTHREADS 4  /* not including the scheduler */
-/* the scheduler does not take up a thread of its own */
 #define CNAME(s) _ ## s
 #define LABNAME(lab) lab ## $
 

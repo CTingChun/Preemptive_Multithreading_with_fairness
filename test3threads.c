@@ -12,9 +12,10 @@
 * _data __at (0x30) type var;
 * to declare a variable var of the type
 */
-#define BUFFER_SIZE 6
+#define BUFFER_SIZE 3
 __idata __at (0x2D) char buffer[BUFFER_SIZE];
-__idata __at (0x3A) char buf;
+__idata __at (0x3A) char buf1;
+__idata __at (0x38) char buf2;
 __idata __at (0x3B) char produce;
 __idata __at (0x3C) char consume;
 __idata __at (0x3D) char total;
@@ -27,13 +28,13 @@ __idata __at (0x37) char empty;
 * time from 'A' to 'Z' and starts from 'A' again. The shared buffer
 * must be empty in order for the Producer to write.
 */
-void Producer( void ) {
+void Producer1( void ) {
     /*
     * @@@ [2 pt]
     * initialize producer data structure, and then enter
     * an infinite loop (does not return)
     */
-    buf = 'A';
+    buf1 = 'A';
     for (;;) {
     /* @@@ [6 pt]
     * wait for the buffer to be available,
@@ -41,21 +42,47 @@ void Producer( void ) {
         SemaphoreWait(empty);
         SemaphoreWait(mutex);
         if (total < 3) {
-                buffer[produce] = buf;
-                total ++;
-                if (produce == 2) 
-                        produce = 0;
-                else 
-                        produce ++;
-                if (buf == 'Z') 
-                        buf = 'A';
-                else 
-                        buf ++;
+            buffer[produce] = buf1;
+            total ++;
+            if (produce == 2) produce = 0;
+            else produce ++;
+            // produce = ( produce  == 2) ? 0 : produce + 1;
+            // buf1 = (buf1 == 'Z') ? 'A' : buf1 + 1;
+            if (buf1 == 'Z') buf1 = 'A';
+            else buf1 ++;
         }
         SemaphoreSignal(mutex);
         SemaphoreSignal(full);
     }
 }
+void Producer2( void ) {
+    /*
+    * @@@ [2 pt]
+    * initialize producer data structure, and then enter
+    * an infinite loop (does not return)
+    */
+    buf2 = '0';
+    for (;;) {
+    /* @@@ [6 pt]
+    * wait for the buffer to be available,
+    * and then write the new data into the buffer */
+        SemaphoreWait(empty);
+        SemaphoreWait(mutex);
+        if (total < 3) {
+            buffer[produce] = buf2;
+            total ++;
+            if (produce == 2) produce = 0;
+            else produce ++;
+            // produce = (produce  == 2) ? 0 : produce + 1;
+            // buf2 = (buf2 == '9') ? '0' : buf2 + 1;
+            if (buf2 == '9') buf2 = '0';
+            else buf2 ++ ;
+        }
+        SemaphoreSignal(mutex);
+        SemaphoreSignal(full);
+    }
+}
+
 /* [10 pts for this function]
 * the consumer in this test program gets the next item from
 * the queue and consume it and writes it to the serial port.
@@ -78,10 +105,7 @@ void Consumer( void ) {
         if (total > 0) {
                 SBUF = buffer[consume];
                 total --;
-                if (consume == 2) 
-                        consume = 0;
-                else 
-                        consume ++;
+                consume =  (consume == 2) ? 0 : consume + 1;
                 while (!TI) { }
                 TI = 0;
         }
@@ -106,9 +130,10 @@ void main( void ) {
     SemaphoreCreate(mutex, 1);
     SemaphoreCreate(full, 0);
     SemaphoreCreate(empty, 3);
-    ThreadCreate(Producer);
-    ThreadCreate(Consumer);
-    ThreadExit();
+    ThreadCreate(&Producer1);
+    ThreadCreate(&Producer2);
+    ThreadCreate(&Consumer);
+    // ThreadExit();
 }
 
 void _sdcc_gsinit_startup( void ) {
